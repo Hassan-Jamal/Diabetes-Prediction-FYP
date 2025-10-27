@@ -46,18 +46,36 @@ export default function HospitalLogin() {
 
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
 
       if (error) throw error
 
-      if (rememberMe) {
-        localStorage.setItem("rememberEmail", formData.email)
-      }
+      // Check if user has the hospital role
+      if (data.user) {
+        const userMetadata = data.user.user_metadata
+        if (userMetadata?.role !== 'hospital') {
+          throw new Error("Unauthorized: Hospital role required")
+        }
 
-      router.push("/hospital/dashboard")
+        // Store user in context for the dashboard
+        const userData = {
+          id: data.user.id,
+          email: data.user.email || formData.email,
+          role: 'hospital' as const,
+          organizationName: userMetadata?.organization_name || 'Hospital',
+        }
+
+        localStorage.setItem("user", JSON.stringify(userData))
+        
+        if (rememberMe) {
+          localStorage.setItem("rememberEmail", formData.email)
+        }
+
+        router.push("/hospital/dashboard")
+      }
     } catch (error) {
       console.error("Login error:", error)
       setErrors({ submit: error instanceof Error ? error.message : "Invalid email or password" })
