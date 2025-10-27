@@ -46,18 +46,36 @@ export default function LabLogin() {
 
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
 
       if (error) throw error
 
-      if (rememberMe) {
-        localStorage.setItem("rememberEmail", formData.email)
-      }
+      // Check if user has the lab role
+      if (data.user) {
+        const userMetadata = data.user.user_metadata
+        if (userMetadata?.role !== 'lab') {
+          throw new Error("Unauthorized: Lab role required")
+        }
 
-      router.push("/lab/dashboard")
+        // Store user in context for the dashboard
+        const userData = {
+          id: data.user.id,
+          email: data.user.email || formData.email,
+          role: 'lab' as const,
+          organizationName: userMetadata?.organization_name || 'Lab',
+        }
+
+        localStorage.setItem("user", JSON.stringify(userData))
+        
+        if (rememberMe) {
+          localStorage.setItem("rememberEmail", formData.email)
+        }
+
+        router.push("/lab/dashboard")
+      }
     } catch (error) {
       console.error("[v0] Login error:", error)
       setErrors({ submit: error instanceof Error ? error.message : "Invalid email or password" })

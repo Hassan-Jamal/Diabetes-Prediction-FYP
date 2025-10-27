@@ -27,6 +27,7 @@ export default function LabSignup() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -83,7 +84,11 @@ export default function LabSignup() {
 
       if (error) throw error
 
-      router.push("/lab/dashboard")
+      // Show success message and redirect to login page
+      setSuccess(true)
+      setTimeout(() => {
+        router.push("/lab/login")
+      }, 2000)
     } catch (error) {
       console.error("[v0] Signup error:", error)
       setErrors({ submit: error instanceof Error ? error.message : "Signup failed. Please try again." })
@@ -117,7 +122,13 @@ export default function LabSignup() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {success && (
+            <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700 border border-green-200">
+              Account created successfully! Redirecting to login...
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6" style={{ display: success ? 'none' : 'block' }}>
             {/* Lab Information */}
             <div>
               <h2 className="mb-4 text-lg font-semibold text-slate-900">Laboratory Information</h2>
