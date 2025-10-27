@@ -14,7 +14,7 @@ function LabDashboardContent() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Laboratory Dashboard</h1>
-            <p className="mt-1 text-slate-600">Welcome, {user?.name}</p>
+            <p className="mt-1 text-slate-600">Welcome, {user?.organizationName || user?.email}</p>
           </div>
           <Button
             onClick={logout}
