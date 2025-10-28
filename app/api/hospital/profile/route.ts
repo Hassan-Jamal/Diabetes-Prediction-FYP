@@ -21,10 +21,50 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("[v0] Error fetching hospital profile:", error)
+      
+      // If profile doesn't exist, create it from user metadata
+      if (error.code === 'PGRST116') {
+        console.log("[v0] Hospital profile not found, creating from user metadata...")
+        
+        const userMetadata = user.user.user_metadata || {}
+        const hospitalIdFromMetadata = userMetadata.hospital_id || null
+        
+        const { data: newProfile, error: createError } = await supabase
+          .from("hospitals")
+          .insert({
+            id: hospitalId,
+            name: userMetadata.organization_name || user.user.email || "Unknown Hospital",
+            email: user.user.email,
+            phone: userMetadata.phone || null,
+            address: userMetadata.address || null,
+            registration_id: hospitalIdFromMetadata,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error("[v0] Error creating hospital profile:", createError)
+          return NextResponse.json({ error: "Failed to create profile" }, { status: 500 })
+        }
+
+        return NextResponse.json({
+          ...newProfile,
+          hospital_id: hospitalIdFromMetadata
+        }, { status: 200 })
+      }
+      
       return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 })
     }
 
-    return NextResponse.json(profile, { status: 200 })
+    // Add hospital_id from user metadata
+    const hospitalIdFromMetadata = user.user.user_metadata?.hospital_id || null
+    
+    return NextResponse.json({
+      ...profile,
+      hospital_id: hospitalIdFromMetadata
+    }, { status: 200 })
   } catch (error) {
     console.error("[v0] Error in GET /api/hospital/profile:", error)
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 })

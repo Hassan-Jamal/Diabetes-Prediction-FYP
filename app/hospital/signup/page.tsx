@@ -61,6 +61,9 @@ export default function HospitalSignup() {
 
     setIsLoading(true)
     try {
+      // Generate a unique hospital ID
+      const hospitalId = `HOSP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -73,6 +76,7 @@ export default function HospitalSignup() {
             city: formData.city,
             state: formData.state,
             postal_code: formData.zipCode,
+            hospital_id: hospitalId, // Add the unique ID
           },
           emailRedirectTo:
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/hospital/dashboard`,
@@ -81,7 +85,7 @@ export default function HospitalSignup() {
 
       if (error) throw error
 
-      // Show success message and redirect to login page
+      // Show success message with the generated ID
       setSuccess(true)
       setTimeout(() => {
         router.push("/hospital/login")
@@ -145,6 +149,7 @@ export default function HospitalSignup() {
               </div>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-3">Account Created Successfully!</h2>
+            <p className="text-slate-600 mb-2">Your unique Hospital ID has been generated and saved.</p>
             <p className="text-slate-600 mb-6">Redirecting to login...</p>
           </Card>
         ) : (
