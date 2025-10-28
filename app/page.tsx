@@ -1,21 +1,61 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Logo, LogoSmall } from "@/components/logo"
+import { toast } from "sonner"
 
 export default function Home() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to send message")
+      }
+
+      toast.success("Thank you! Your message has been sent successfully.")
+      setFormData({ name: "", email: "", subject: "", message: "" })
+    } catch (error) {
+      toast.error("Failed to send message. Please try again later.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#0369a1] to-[#059669] bg-clip-text text-transparent">
-                HealthCare Portal
-              </h1>
-              <p className="text-sm text-slate-600">Diabetes Prediction & Consultation</p>
+            <div className="flex items-center gap-3">
+              <LogoSmall />
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-[#0369a1] to-[#059669] bg-clip-text text-transparent">
+                  DiabetesGuard
+                </h1>
+                <p className="text-sm text-slate-600">AI-Powered Diabetes Prediction & Management</p>
+              </div>
             </div>
             <div className="flex gap-3">
               <Link href="/hospital/login">
@@ -95,7 +135,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="px-4 py-20 sm:px-6 lg:px-8">
+      <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <h3 className="text-4xl font-bold text-slate-900">Powerful Features for Healthcare Providers</h3>
@@ -442,6 +482,130 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Contact Form Section */}
+      <section id="contact" className="px-4 py-20 sm:px-6 lg:px-8 bg-slate-50">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h3 className="text-4xl font-bold text-slate-900">Get in Touch</h3>
+            <p className="mt-4 text-xl text-slate-600">Have questions? We'd love to hear from you</p>
+          </div>
+
+          <div className="grid gap-12 lg:grid-cols-2">
+            {/* Contact Info */}
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-2xl font-bold text-slate-900 mb-4">Let's Talk</h4>
+                <p className="text-slate-600 leading-relaxed">
+                  Whether you're a hospital administrator looking to improve patient care, or a laboratory manager seeking
+                  better workflow management, we're here to help.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                      <svg className="h-6 w-6 text-[#0369a1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Email</h5>
+                    <p className="text-slate-600">hassanjamalbukhari@gmail.com</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100">
+                      <svg className="h-6 w-6 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Response Time</h5>
+                    <p className="text-slate-600">We typically respond within 24 hours</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <Card className="p-8 border-2 border-slate-200">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Name *
+                    </label>
+                    <Input
+                      id="name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Your name"
+                      className="border-slate-300"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Email *
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="your.email@example.com"
+                      className="border-slate-300"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-semibold text-slate-700 mb-2">
+                    Subject
+                  </label>
+                  <Input
+                    id="subject"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    placeholder="What's this about?"
+                    className="border-slate-300"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block text-sm font-semibold text-slate-700 mb-2">
+                    Message *
+                  </label>
+                  <Textarea
+                    id="message"
+                    required
+                    rows={6}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    placeholder="Tell us how we can help you..."
+                    className="border-slate-300 resize-none"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-[#0369a1] to-[#059669] text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-[#0369a1] to-[#059669] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
@@ -470,24 +634,35 @@ export default function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 md:grid-cols-4 mb-8">
             <div>
-              <h4 className="text-lg font-bold text-white">HealthCare Portal</h4>
-              <p className="mt-2 text-slate-400">Diabetes Prediction & Consultation System</p>
+              <div className="flex items-center gap-2 mb-3">
+                <LogoSmall />
+                <h4 className="text-lg font-bold text-white">DiabetesGuard</h4>
+              </div>
+              <p className="mt-2 text-slate-400">AI-Powered Diabetes Prediction & Management System</p>
+              <p className="mt-4 text-slate-500 text-sm">
+                Transforming healthcare through intelligent diabetes prediction and comprehensive patient management.
+              </p>
             </div>
             <div>
               <h5 className="font-bold text-white">Product</h5>
               <ul className="mt-4 space-y-2 text-slate-400">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <a href="#features" className="hover:text-white transition-colors">
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
-                    Pricing
-                  </a>
+                  <Link href="/hospital/signup" className="hover:text-white transition-colors">
+                    For Hospitals
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/lab/signup" className="hover:text-white transition-colors">
+                    For Laboratories
+                  </Link>
+                </li>
+                <li>
+                  <a href="#security" className="hover:text-white transition-colors">
                     Security
                   </a>
                 </li>
@@ -497,45 +672,55 @@ export default function Home() {
               <h5 className="font-bold text-white">Company</h5>
               <ul className="mt-4 space-y-2 text-slate-400">
                 <li>
-                  <a href="#" className="hover:text-white">
-                    About
-                  </a>
+                  <Link href="#about" className="hover:text-white transition-colors">
+                    About Us
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="#contact" className="hover:text-white transition-colors">
                     Contact
+                  </Link>
+                </li>
+                <li>
+                  <a href="mailto:hassanjamalbukhari@gmail.com" className="hover:text-white transition-colors">
+                    Support
                   </a>
+                </li>
+                <li>
+                  <Link href="/hospital/login" className="hover:text-white transition-colors">
+                    Login
+                  </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h5 className="font-bold text-white">Legal</h5>
+              <h5 className="font-bold text-white">Resources</h5>
               <ul className="mt-4 space-y-2 text-slate-400">
                 <li>
-                  <a href="#" className="hover:text-white">
-                    Privacy
+                  <a href="https://www.diabetes.org.uk" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    Diabetes Resources
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
-                    Terms
+                  <a href="https://www.who.int/health-topics/diabetes" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    WHO Guidelines
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
-                    Compliance
+                  <a href="#" className="hover:text-white transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    API Reference
                   </a>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-slate-700 pt-8 text-center text-slate-400">
-            <p>&copy; 2025 HealthCare Portal. All rights reserved. | Transforming Healthcare Through Technology</p>
+            <p>&copy; 2025 DiabetesGuard. All rights reserved. | AI-Powered Diabetes Management</p>
           </div>
         </div>
       </footer>
